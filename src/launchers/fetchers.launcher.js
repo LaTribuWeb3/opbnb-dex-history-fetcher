@@ -16,13 +16,13 @@ const { DATA_DIR } = require('../utils/constants');
 const RUN_EVERY_MINUTES = 60;
 
 const fetchersToStart = [
-  pancakeHistoryFetcher,
-  pancakePriceHistoryFetcher,
-  pancakeswapV2HistoryFetcher,
+  // pancakeHistoryFetcher,
+  // pancakePriceHistoryFetcher,
+  // pancakeswapV2HistoryFetcher,
   pancakeswapV3HistoryFetcher,
   pancakeswapV3PriceHistoryFetcher,
-  wombatHistoryFetcher,
-  wombatPriceHistoryFetcher,
+  // wombatHistoryFetcher,
+  // wombatPriceHistoryFetcher,
   PrecomputeMedianPrices
 ];
 
@@ -41,7 +41,7 @@ async function LaunchFetchers() {
 
       // in the end, purge empty cvs
       purgeEmptyCSVs(DATA_DIR);
-      
+
       UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, false);
     } catch (error) {
       const errorMsg = `An exception occurred: ${error}`;

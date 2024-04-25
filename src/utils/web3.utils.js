@@ -8,15 +8,27 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || 'YourApiKeyToken';
 let lastCallEtherscan = 0;
 
 async function getTxHashFromEtherscan(contractAddress) {
-  const etherscanUrl = `https://api.bscscan.com/api?module=contract&action=getcontractcreation&contractaddresses=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`;
-  const etherscanResponse = await axios.get(etherscanUrl);
+  const url = 'https://opbnb-mainnet.nodereal.io/v1/9d89a35466ac44888e9364ed79c38176';
+  const data = {
+    jsonrpc: '2.0',
+    method: 'nr_getContractCreationTransaction',
+    params: [contractAddress],
+    id: 1
+  };
+  const config = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
 
-  if (etherscanResponse.data.message == 'NOTOK') {
-    throw new Error(`getTxHashFromEtherscan: Error: ${etherscanResponse.data.result}`);
-  } else if (etherscanResponse.data.result[0].txHash) {
-    return etherscanResponse.data.result[0].txHash;
+  const response = await axios.post(url, data, config);
+
+  if (response.statusText == 'NOTOK') {
+    throw new Error(`getTxHashFromEtherscan: Error: ${response.data.result}`);
+  } else if (response.data.result.blockNumber) {
+    return response.data.result.blockNumber;
   } else {
-    console.error(etherscanResponse);
+    console.error(response);
     throw new Error('`getTxHashFromEtherscan: unknown error');
   }
 }
@@ -36,22 +48,10 @@ async function GetContractCreationBlockNumber(web3Provider, contractAddress) {
     await sleep(msToWait);
   }
   // call etherscan to get the tx receipt of contract creation
-  const txHash = await retry(getTxHashFromEtherscan, [contractAddress]);
+  const blockNumber = await retry(getTxHashFromEtherscan, [contractAddress]);
   lastCallEtherscan = Date.now();
-
-  const receipt = await retry(getTxHash, [web3Provider, txHash]);
-  // console.log(receipt);
-  console.log(`${fnName()}: returning blocknumber: ${receipt.blockNumber}`);
-  return receipt.blockNumber;
-}
-
-async function getTxHash(web3Provider, txHash) {
-  const receipt = await web3Provider.getTransactionReceipt(txHash);
-  if (!receipt) {
-    throw new Error('Cannot get receipt');
-  }
-
-  return receipt;
+  console.log(`${fnName()}: returning blocknumber: ${blockNumber}`);
+  return blockNumber;
 }
 
 /**
