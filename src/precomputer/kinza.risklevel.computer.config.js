@@ -1,68 +1,10 @@
-const protocolDataProviderAddress = '0x09Ddc4AE826601b0F9671b9edffDf75e7E6f5D61';
+const protocolDataProviderAddress = '0xBb5f2d30c0fC9B0f71f7B19DaF19e7Cf3D23eb5E';
 
 const pairsToCompute = {
-  USDC: [
-    'USDT',
-    'BTCB',
-    'ETH',
-    'WBNB',
-    'wBETH',
-    'lisUSD',
-    'FDUSD'
-  ],
-  USDT: ['USDC'],
-  BTCB: [
-    'USDC',
-    'USDT',
-    'ETH',
-    'WBNB',
-    'wBETH',
-    'lisUSD',
-    'FDUSD'
-  ],
-  ETH: [
-    'USDC',
-    'USDT',
-    'BTCB',
-    'WBNB',
-    'wBETH',
-    'lisUSD',
-    'FDUSD',
-    'ezETH'
-  ],
+  USDT: ['WBNB'],
+
   WBNB: [
-    'USDC',
     'USDT',
-    'BTCB',
-    'ETH',
-    'wBETH',
-    'lisUSD',
-    'FDUSD'
-  ],
-  wBETH: [
-    'USDC',
-    'USDT',
-    'BTCB',
-    'ETH',
-    'WBNB',
-    'lisUSD',
-    'FDUSD'
-  ],
-  lisUSD: [
-    'USDC',
-    'USDT',
-  ],
-  FDUSD: [
-    'USDC',
-    'USDT',
-    'BTCB',
-    'ETH',
-    'WBNB',
-    'wBETH',
-    'lisUSD',
-  ],
-  ezETH: [
-    'ETH',
   ],
 };
 
