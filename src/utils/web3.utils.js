@@ -42,14 +42,14 @@ async function getTxHashFromEtherscan(contractAddress) {
  */
 async function GetContractCreationBlockNumber(web3Provider, contractAddress) {
   console.log(`${fnName()}: fetching data for contract ${contractAddress}`);
-  const msToWait = 10000 - (Date.now() - lastCallEtherscan);
-  if (msToWait > 0) {
-    console.log(`${fnName()}: Sleeping ${msToWait} before calling etherscan`);
-    await sleep(msToWait);
-  }
+  // const msToWait = 10000 - (Date.now() - lastCallEtherscan);
+  // if (msToWait > 0) {
+  //   console.log(`${fnName()}: Sleeping ${msToWait} before calling etherscan`);
+  //   await sleep(msToWait);
+  // }
   // call etherscan to get the tx receipt of contract creation
   const blockNumber = await retry(getTxHashFromEtherscan, [contractAddress]);
-  lastCallEtherscan = Date.now();
+  // lastCallEtherscan = Date.now();
   console.log(`${fnName()}: returning blocknumber: ${blockNumber}`);
   return blockNumber;
 }
