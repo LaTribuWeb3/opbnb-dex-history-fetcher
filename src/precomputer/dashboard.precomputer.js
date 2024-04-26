@@ -8,7 +8,7 @@ const {
   logFnDuration,
   retry
 } = require('../utils/utils');
-const { DATA_DIR, PLATFORMS } = require('../utils/constants');
+const { DATA_DIR, PLATFORMS, BLOCK_PER_DAY } = require('../utils/constants');
 
 const fs = require('fs');
 const path = require('path');
@@ -21,6 +21,7 @@ const { WaitUntilDone, SYNC_FILENAMES } = require('../utils/sync');
 const { getPrices } = require('../data.interface/internal/data.interface.price');
 const { precomputeRiskLevelKinza } = require('./kinza.risklevel.computer');
 
+
 const RUN_EVERY_MINUTES = process.env.RUN_EVERY || 3 * 60; // in minutes
 const MONITORING_NAME = 'Dashboard Precomputer';
 const RPC_URL = process.env.RPC_URL;
@@ -30,7 +31,7 @@ const TARGET_DATA_POINTS = NB_DAYS;
 const NB_DAYS_AVG = 30;
 
 const BIGGEST_DAILY_CHANGE_OVER_DAYS = 90; // amount of days to compute the biggest daily change
-let BLOCK_PER_DAY = 0; // 7127
+let COMPUTED_BLOCK_PER_DAY = 0; // 7127
 
 async function PrecomputeDashboardData() {
   // eslint-disable-next-line no-constant-condition
@@ -53,18 +54,18 @@ async function PrecomputeDashboardData() {
       // this will be the start of the graph
       const daysAgo = Math.round(Date.now() / 1000) - NB_DAYS * 24 * 60 * 60;
       console.log('daysAgo:', new Date(daysAgo * 1000));
-      const startBlock = await getBlocknumberForTimestamp(daysAgo);
+      const startBlock = currentBlock - (BLOCK_PER_DAY * NB_DAYS);
       console.log({ startBlock });
 
-      BLOCK_PER_DAY = Math.round((currentBlock - startBlock) / NB_DAYS);
-      console.log({ BLOCK_PER_DAY });
+      COMPUTED_BLOCK_PER_DAY = Math.round((currentBlock - startBlock) / NB_DAYS);
+      console.log({ COMPUTED_BLOCK_PER_DAY });
 
       // this is the real amount of day we will get from our files
       // example: if the first displayed data point is 180 days ago and we need to compute avg for 3 months even for the first point
       // then we need to get the data from 180 days + 90 days (3 month)
       const realDaysAgo = Math.round(Date.now() / 1000) - (NB_DAYS + BIGGEST_DAILY_CHANGE_OVER_DAYS) * 24 * 60 * 60;
       console.log('realDaysAgo:', new Date(realDaysAgo * 1000));
-      const realStartBlock = await getBlocknumberForTimestamp(realDaysAgo);
+      const realStartBlock = currentBlock - (BLOCK_PER_DAY * (NB_DAYS + BIGGEST_DAILY_CHANGE_OVER_DAYS));
       console.log({ realStartBlock });
 
       // block step is the amount of blocks between each displayed points
@@ -90,7 +91,7 @@ async function PrecomputeDashboardData() {
       // AVG step is the amount of blocks to be used when computing average liquidity
       // meaning that if we want the average liquidity at block X since 30 days
       // we will take the data from 'X - avgStep' to 'X'
-      const avgStep = BLOCK_PER_DAY * NB_DAYS_AVG;
+      const avgStep = COMPUTED_BLOCK_PER_DAY * NB_DAYS_AVG;
       console.log({ avgStep });
       const dirPath = path.join(DATA_DIR, 'precomputed', 'dashboard', 'pairs');
       if (!fs.existsSync(path.join(DATA_DIR, 'precomputed', 'dashboard', 'pairs'))) {
@@ -238,7 +239,7 @@ function generateDashboardDataFromLiquidityData(
 
     // platformOutputResult[block].slippageMap = platformLiquidity[nearestBlockBefore].slippageMap;
     const prices = pricesAtBlock
-      .filter((_) => _.block >= block - BLOCK_PER_DAY && _.block <= block)
+      .filter((_) => _.block >= block - COMPUTED_BLOCK_PER_DAY && _.block <= block)
       .map((_) => _.price);
     if (prices.length == 0) {
       if (previousBlock) {

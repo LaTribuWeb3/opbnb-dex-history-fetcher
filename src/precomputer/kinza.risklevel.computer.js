@@ -108,8 +108,8 @@ async function computeSubMarket(base, quote) {
   console.log(`computeSubMarket[${base}/${quote}]: starting`);
   const baseConf = getConfTokenBySymbol(base);
   const quoteConf = getConfTokenBySymbol(quote);
-  const baseTokenAddress = baseConf.address;
-  const quoteTokenAddress = quoteConf.address;
+  const baseTokenAddress = baseConf.mainnetAddress ? baseConf.mainnetAddress : baseConf.address;
+  const quoteTokenAddress = quoteConf.mainnetAddress ? quoteConf.mainnetAddress : quoteConf.address;
   const protocolDataProviderContract = new ethers.Contract(
     protocolDataProviderAddress,
     protocolDataProviderABI,
