@@ -3,7 +3,7 @@ const path = require('path');
 const { DATA_DIR } = require('./constants');
 
 const directoryPath = path.join(DATA_DIR, 'precomputed', 'price', 'pancakeswapv3');
-const percentageChangeThreshold = 15; // Define the percentage change threshold
+const percentageChangeThreshold = 10; // Define the percentage change threshold
 const shouldDeleteLines = false; // Parameter to determine if lines should be deleted
 const fileFilterString = 'USDT'; // Parameter to filter files by name
 

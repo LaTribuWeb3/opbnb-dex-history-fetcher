@@ -3,7 +3,7 @@ const { DEFAULT_STEP_BLOCK, PLATFORMS, BLOCK_PER_DAY } = require('../../utils/co
 const { fnName } = require('../../utils/utils');
 const { getUnifiedDataForInterval, getBlankUnifiedData, getDefaultSlippageMap } = require('./data.interface.utils');
 
-const PIVOTS = ['USDT', 'WBNB', 'ETH'];
+const PIVOTS = [];
 
 /**
  * Get the average liquidity in a block interval, for a platform, with or without pivot route jumps

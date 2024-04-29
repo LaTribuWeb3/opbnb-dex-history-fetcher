@@ -1,29 +1,24 @@
 const { RecordMonitoring } = require('../utils/monitoring');
 const { ethers } = require('ethers');
-const {
-  fnName,
-  roundTo,
-  sleep,
-  logFnDurationWithLabel,
-  logFnDuration,
-  retry
-} = require('../utils/utils');
+const { fnName, roundTo, sleep, logFnDurationWithLabel, logFnDuration, retry } = require('../utils/utils');
 const { DATA_DIR, PLATFORMS, BLOCK_PER_DAY } = require('../utils/constants');
 
 const fs = require('fs');
 const path = require('path');
 const { getBlocknumberForTimestamp } = require('../utils/web3.utils');
 const { getLiquidity, getRollingVolatility, getLiquidityAll } = require('../data.interface/data.interface');
-const { getDefaultSlippageMap, getDefaultSlippageMapSimple } = require('../data.interface/internal/data.interface.utils');
+const {
+  getDefaultSlippageMap,
+  getDefaultSlippageMapSimple
+} = require('../data.interface/internal/data.interface.utils');
 const { median } = require('simple-statistics');
 const { watchedPairs } = require('../global.config');
 const { WaitUntilDone, SYNC_FILENAMES } = require('../utils/sync');
 const { getPrices } = require('../data.interface/internal/data.interface.price');
 const { precomputeRiskLevelKinza } = require('./kinza.risklevel.computer');
 
-
 const RUN_EVERY_MINUTES = process.env.RUN_EVERY || 3 * 60; // in minutes
-const MONITORING_NAME = 'Dashboard Precomputer';
+const MONITORING_NAME = 'OPBNB - Dashboard Precomputer';
 const RPC_URL = process.env.RPC_URL;
 const web3Provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
 const NB_DAYS = 180;
@@ -54,7 +49,7 @@ async function PrecomputeDashboardData() {
       // this will be the start of the graph
       const daysAgo = Math.round(Date.now() / 1000) - NB_DAYS * 24 * 60 * 60;
       console.log('daysAgo:', new Date(daysAgo * 1000));
-      const startBlock = currentBlock - (BLOCK_PER_DAY * NB_DAYS);
+      const startBlock = currentBlock - BLOCK_PER_DAY * NB_DAYS;
       console.log({ startBlock });
 
       COMPUTED_BLOCK_PER_DAY = Math.round((currentBlock - startBlock) / NB_DAYS);
@@ -65,7 +60,12 @@ async function PrecomputeDashboardData() {
       // then we need to get the data from 180 days + 90 days (3 month)
       const realDaysAgo = Math.round(Date.now() / 1000) - (NB_DAYS + BIGGEST_DAILY_CHANGE_OVER_DAYS) * 24 * 60 * 60;
       console.log('realDaysAgo:', new Date(realDaysAgo * 1000));
-      const realStartBlock = currentBlock - (BLOCK_PER_DAY * (NB_DAYS + BIGGEST_DAILY_CHANGE_OVER_DAYS));
+      let realStartBlock = 0;
+      if (currentBlock - BLOCK_PER_DAY * (NB_DAYS + BIGGEST_DAILY_CHANGE_OVER_DAYS) > 3356182) {
+        realStartBlock = currentBlock - BLOCK_PER_DAY * (NB_DAYS + BIGGEST_DAILY_CHANGE_OVER_DAYS);
+      } else {
+        realStartBlock = startBlock;
+      }
       console.log({ realStartBlock });
 
       // block step is the amount of blocks between each displayed points
@@ -185,7 +185,6 @@ async function PrecomputeDashboardData() {
         lastDuration: runEndDate - Math.round(runStartDate / 1000)
       });
 
-      
       // compute risk levels
       await precomputeRiskLevelKinza(true);
 

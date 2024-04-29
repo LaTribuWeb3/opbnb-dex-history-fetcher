@@ -12,7 +12,7 @@ const { getPriceNormalized, getSlippages, getAllPoolsToFetch } = require('./panc
 const { default: BigNumber } = require('bignumber.js');
 const { RecordMonitoring } = require('../utils/monitoring');
 const { generateUnifiedFileUniv3 } = require('./pancakeswap.v3.unified.generator');
-const { DATA_DIR } = require('../utils/constants');
+const { DATA_DIR, BLOCK_PER_DAY } = require('../utils/constants');
 const path = require('path');
 const { providers } = require('@0xsequence/multicall');
 const { pairsToFetch } = require('../global.config');
@@ -36,7 +36,7 @@ async function pancakeswapV3HistoryFetcher(onlyOnce = false) {
     const start = Date.now();
     try {
       await RecordMonitoring({
-        name: 'pancakeswapV3 Fetcher',
+        name: 'OPBNB - pancakeswapV3 Fetcher',
         status: 'running',
         lastStart: Math.round(start / 1000),
         runEvery: runEverySec
@@ -63,8 +63,8 @@ async function pancakeswapV3HistoryFetcher(onlyOnce = false) {
       // this is used to only keep 380 days of data, but still need to fetch trade data since the pool initialize block
       // computing the data is CPU heavy so this avoid computing too old data that we don't use
       // fetching events is not
-      const minStartDate = Math.round(Date.now() / 1000) - 380 * 24 * 60 * 60; // min start block is 380 days ago
-      const minStartBlock = await getBlocknumberForTimestamp(minStartDate);
+      // const minStartDate = Math.round(Date.now() / 1000) - 380 * 24 * 60 * 60; // min start block is 380 days ago
+      const minStartBlock = currentBlock - 380 * BLOCK_PER_DAY;
       console.log(`minStartBlock is ${minStartBlock}`);
 
       console.log(`${fnName()}: getting pools to fetch`);
