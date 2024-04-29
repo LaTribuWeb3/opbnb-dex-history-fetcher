@@ -14,7 +14,7 @@ const { getConfTokenBySymbol } = require('../utils/token.utils');
 const RPC_URL = process.env.RPC_URL;
 const web3Provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
 const RUN_EVERY_MINUTES = process.env.RUN_EVERY || 3 * 60; // in minutes
-const MONITORING_NAME = 'Kinza Risk Level';
+const MONITORING_NAME = 'OPBNB - Kinza Risk Level';
 
 /**
  * Precompute data for the risk oracle front
@@ -108,8 +108,9 @@ async function computeSubMarket(base, quote) {
   console.log(`computeSubMarket[${base}/${quote}]: starting`);
   const baseConf = getConfTokenBySymbol(base);
   const quoteConf = getConfTokenBySymbol(quote);
-  const baseTokenAddress = baseConf.mainnetAddress ? baseConf.mainnetAddress : baseConf.address;
-  const quoteTokenAddress = quoteConf.mainnetAddress ? quoteConf.mainnetAddress : quoteConf.address;
+  const baseTokenAddress = baseConf.address;
+  const baseTokenAddressForPrice = baseConf.mainnetAddress ? baseConf.mainnetAddress : baseConf.address;
+  const quoteTokenAddressForPrice = quoteConf.mainnetAddress ? quoteConf.mainnetAddress : quoteConf.address;
   const protocolDataProviderContract = new ethers.Contract(
     protocolDataProviderAddress,
     protocolDataProviderABI,
@@ -125,15 +126,17 @@ async function computeSubMarket(base, quote) {
   ]);
 
   const baseTokenInfo = await axios.get(
-    'https://coins.llama.fi/prices/current/bsc:' + baseTokenAddress + ',bsc:' + quoteTokenAddress
+    'https://coins.llama.fi/prices/current/bsc:' + baseTokenAddressForPrice + ',bsc:' + quoteTokenAddressForPrice
   );
+  const baseTokenPrice = baseTokenInfo.data.coins['bsc:' + baseTokenAddressForPrice].price;
+  const quoteTokenPrice = baseTokenInfo.data.coins['bsc:' + quoteTokenAddressForPrice].price;
 
   let riskLevel = 0.0;
 
   const liquidationBonusBps = reserveDataConfigurationBase.liquidationBonus.toNumber() - 10000;
 
-  const baseSupplyCapUSD = baseReserveCaps.supplyCap.toNumber() * baseTokenInfo.data.coins['bsc:' + baseTokenAddress].price;
-  const quoteBorrowCapUSD = quoteReserveCaps.borrowCap.toNumber() * baseTokenInfo.data.coins['bsc:' + quoteTokenAddress].price;
+  const baseSupplyCapUSD = baseReserveCaps.supplyCap.toNumber() * baseTokenPrice;
+  const quoteBorrowCapUSD = quoteReserveCaps.borrowCap.toNumber() * quoteTokenPrice;
   const capToUseUsd = Math.min(baseSupplyCapUSD, quoteBorrowCapUSD);
   const liquidationThresholdBps = reserveDataConfigurationBase.liquidationThreshold.toNumber();
   const ltvBps = reserveDataConfigurationBase.ltv.toNumber();
@@ -141,7 +144,7 @@ async function computeSubMarket(base, quote) {
   const { volatility, liquidityInKind } = getLiquidityAndVolatilityFromDashboardData(base, quote, liquidationBonusBps);
 
   const liquidity = liquidityInKind;
-  const liquidityUsd = liquidity * baseTokenInfo.data.coins['bsc:' + baseTokenAddress].price;
+  const liquidityUsd = liquidity * baseTokenPrice;
   const selectedVolatility = volatility;
   riskLevel = findRiskLevelFromParameters(
     selectedVolatility,
@@ -162,8 +165,8 @@ async function computeSubMarket(base, quote) {
     borrowCapInKind: quoteReserveCaps.borrowCap.toNumber(),
     volatility: selectedVolatility,
     liquidity: liquidity,
-    basePrice: baseTokenInfo.data.coins['bsc:' + baseTokenAddress].price,
-    quotePrice: baseTokenInfo.data.coins['bsc:' + quoteTokenAddress].price
+    basePrice: baseTokenPrice,
+    quotePrice: quoteTokenPrice
   };
 
   console.log(`computeSubMarket[${base}/${quote}]: result:`, pairValue);
@@ -171,10 +174,10 @@ async function computeSubMarket(base, quote) {
 }
 
 /**
- * 
- * @param {string} base 
- * @param {string} quote 
- * @param {number} liquidationBonusBPS 
+ *
+ * @param {string} base
+ * @param {string} quote
+ * @param {number} liquidationBonusBPS
  * @returns {{volatility: number, liquidityInKind: number}}
  */
 function getLiquidityAndVolatilityFromDashboardData(base, quote, liquidationBonusBPS) {
