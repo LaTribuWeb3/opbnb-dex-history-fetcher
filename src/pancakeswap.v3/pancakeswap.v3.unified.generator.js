@@ -2,9 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const { fnName, readLastLine } = require('../utils/utils');
 const { getAvailablepancakeswapV3, getUniV3DataforBlockInterval } = require('./pancakeswap.v3.utils');
-const { DATA_DIR } = require('../utils/constants');
+const { DATA_DIR, BLOCK_PER_DAY } = require('../utils/constants');
 const { truncateUnifiedFiles } = require('../data.interface/unified.truncator');
-const { getBlocknumberForTimestamp } = require('../utils/web3.utils');
 
 async function generateUnifiedFileUniv3(endBlock) {
   const available = getAvailablepancakeswapV3(DATA_DIR);
@@ -13,7 +12,7 @@ async function generateUnifiedFileUniv3(endBlock) {
     fs.mkdirSync(path.join(DATA_DIR, 'precomputed', 'pancakeswapv3'), { recursive: true });
   }
 
-  const blockLastYear = await getBlocknumberForTimestamp(Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60);
+  const blockLastYear = endBlock - (BLOCK_PER_DAY * 365);
   for (const base of Object.keys(available)) {
     for (const quote of available[base]) {
       await createUnifiedFileForPair(endBlock, base, quote, blockLastYear);
