@@ -22,7 +22,7 @@ const STEP_MAX = Number(process.env.PANCAKE_V3_PRICE_STEP_MAX) || Number.MAX_SAF
 
 const runEverySec = 60 * 60;
 
-const WORKER_NAME = 'pancakeswapV3 Price Fetcher';
+const WORKER_NAME = 'OPBNB - pancakeswapV3 Price Fetcher';
 
 /**
  * Fetch all liquidity history from pancakeswapV3 pairs
