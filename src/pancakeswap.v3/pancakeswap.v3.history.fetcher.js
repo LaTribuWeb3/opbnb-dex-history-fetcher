@@ -26,6 +26,9 @@ const STEP_MAX = Number(process.env.PANCAKE_V3_STEP_MAX) || Number.MAX_SAFE_INTE
 
 const runEverySec = 60 * 60;
 
+
+const WORKER_NAME = 'OPBNB - pancakeswapV3 Fetcher';
+
 /**
  * Fetch all liquidity history from pancakeswapV2 pairs
  * The pairs to fetch are read from the config file './pancakeswap.v2.config'
@@ -36,7 +39,7 @@ async function pancakeswapV3HistoryFetcher(onlyOnce = false) {
     const start = Date.now();
     try {
       await RecordMonitoring({
-        name: 'OPBNB - pancakeswapV3 Fetcher',
+        name: WORKER_NAME,
         status: 'running',
         lastStart: Math.round(start / 1000),
         runEvery: runEverySec
@@ -117,7 +120,7 @@ async function pancakeswapV3HistoryFetcher(onlyOnce = false) {
 
       const runEndDate = Math.round(Date.now() / 1000);
       await RecordMonitoring({
-        name: 'pancakeswapV3 Fetcher',
+        name: WORKER_NAME,
         status: 'success',
         lastEnd: runEndDate,
         lastDuration: runEndDate - Math.round(start / 1000),
@@ -127,7 +130,7 @@ async function pancakeswapV3HistoryFetcher(onlyOnce = false) {
       const errorMsg = `An exception occurred: ${error}`;
       console.log(errorMsg);
       await RecordMonitoring({
-        name: 'pancakeswapV3 Fetcher',
+        name: WORKER_NAME,
         status: 'error',
         error: errorMsg
       });

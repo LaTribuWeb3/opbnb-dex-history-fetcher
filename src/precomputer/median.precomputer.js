@@ -14,7 +14,7 @@ dotenv.config();
 const runEverySec = 60 * 60;
 const RPC_URL = process.env.RPC_URL;
 
-const WORKER_NAME = 'Median Prices Precomputer';
+const WORKER_NAME = 'OPBNB - Median Prices Precomputer';
 
 async function PrecomputeMedianPrices(onlyOnce = false) {
   // eslint-disable-next-line no-constant-condition
